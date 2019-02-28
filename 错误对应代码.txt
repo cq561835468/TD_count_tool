@@ -1,0 +1,5 @@
+登陆失败  socket_main_newUI:login(clent)
+timeout   socket_data:sendmsg(clent)
+用例导出失败！  socket_main_newUI:excelout|timestatistics
+当前版本过旧，请更新至最新版本！ socket_main_newUI:login
+用例导出失败！	socket_main_newUI:excelout|excelout2

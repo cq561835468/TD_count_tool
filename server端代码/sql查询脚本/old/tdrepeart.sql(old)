@@ -1,0 +1,99 @@
+﻿create procedure tdrepeart
+@m nvarchar(max),
+@n nvarchar(max)
+as
+begin
+DECLARE @s nvarchar(2000)
+DECLARE @u nvarchar(2000)
+DECLARE @p nvarchar(2000)
+DECLARE @ID int
+DECLARE @name varchar(2000)
+DECLARE @fold int
+DECLARE @count int
+DECLARE @nowco int
+DECLARE @runid varchar(2000)
+DECLARE @out varchar(2000)
+DECLARE @pu varchar(2000)
+
+create table ##tmp
+(
+id int,
+name varchar(2000),
+fold int
+)
+--保存测试人与用例，测试项关系
+create table ##tmp2 
+(
+RN_CYCLE_ID int,
+RN_TEST_ID int,
+RN_RUN_ID int,
+RN_RUN_NAME  varchar(2000),
+RN_TESTER_NAME  varchar(2000)
+)
+--保存符合过滤规则的用例
+
+create table ##tmp3 
+(
+RN_CYCLE_ID int,
+RN_TEST_ID int,
+RN_RUN_ID int,
+RN_RUN_NAME  varchar(2000),
+RN_TESTER_NAME  varchar(2000)
+)
+--保存过滤出来的每人最新执行的测试用例信息
+
+set @s = 'insert into ##tmp 
+select distinct RN_TEST_ID,RN_TESTER_NAME,RN_CYCLE_ID
+from '+@n+'.[dbo].[RUN]
+where RN_CYCLE_ID in 
+(select CY_CYCLE_ID 
+from '+@n+'.[dbo].[CYCLE] 
+where CY_FOLDER_ID in (SELECT CF_ITEM_ID FROM '+@n+'.[dbo].[CYCL_FOLD] where CF_ITEM_PATH like '''+@m+'''))'
+--插入临时tmp表中搜索出来的测试者与用例的关系
+exec(@s)
+
+set @u = 'insert into ##tmp2
+select RN_CYCLE_ID,RN_TEST_ID,RN_RUN_ID,RN_RUN_NAME,RN_TESTER_NAME 
+from '+@n+'.[dbo].[RUN]
+where RN_CYCLE_ID in 
+(select CY_CYCLE_ID 
+from '+@n+'.[dbo].[CYCLE] 
+where CY_FOLDER_ID in (SELECT CF_ITEM_ID FROM '+@n+'.[dbo].[CYCL_FOLD] where CF_ITEM_PATH like '''+@m+'''))'
+--插入tmp2表中，符合测试项的所有测试者与用例对应关系 （过滤了重复TEST_ID与多余的字段)
+exec(@u)
+
+set @count = (SELECT COUNT(*) from ##tmp2)
+set @nowco = 0
+while(@nowco < @count) 
+begin 
+set @ID = (select top 1 id from ##tmp)
+set @name =  (select top 1 name from ##tmp)
+set @fold = (select top 1 fold from ##tmp)
+insert into ##tmp3
+select top 1 * 
+from ##tmp2 
+where RN_TEST_ID=@ID and RN_TESTER_NAME=@name and RN_CYCLE_ID=@fold 
+order by RN_Run_ID desc
+
+set @runid = (select top 1 RN_RUN_ID from ##tmp3)
+
+print @runid
+set @p = 'insert into tmp4
+select ST_STEP_NAME,ST_STATUS,ST_EXECUTION_DATE,ST_EXECUTION_TIME,ST_DESCRIPTION,ST_EXPECTED
+from '+@n+'.[dbo].[STEP] 
+where ST_RUN_ID = '+@runid+''
+print @p
+exec(@p)
+
+
+delete ##tmp where id=@ID and name=@name and fold=@fold
+delete ##tmp2 where RN_TEST_ID=@ID and RN_TESTER_NAME=@name and RN_CYCLE_ID=@fold
+delete ##tmp3 where RN_RUN_ID = @runid
+set @nowco = @nowco +1
+end
+drop table ##tmp
+drop table ##tmp2
+drop table ##tmp3
+--select * from ##tmp4
+
+end

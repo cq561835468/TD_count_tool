@@ -1,0 +1,28 @@
+----------------------------------功能1+2----------------
+ifrelivetable 判断是否有该表 有就删除 没有就不做操作
+ifsaverelive 判断是否有该存储过程 有就删除 没有就不做操作
+tablecreat 创建表tmp5
+tablecreattmp4 创建表tmp4 该表为功能一的导出用例表
+tablecreattmp6 创建表tmp6 该表为功能一的曲线导出表
+tdcount 统计轮次文件夹重复用例个数
+tdcount2 统计整个项目重复用例个数
+tdpap 功能2写入tmp5该项目的测试用例step
+tdpicture 按照日期排序统计执行的测试用例(当天多次执行计算一次) ---已废弃
+td_picture_all 统计当前文件夹中的所有step(包括历史记录) ----用于替代tdpicture 
+tdrepeart 功能1写入tmp4该轮次的测试用例step
+tdrepeart_fail 功能1的规则2 优先统计失败step
+td_rule_3 功能1的规则3
+td_rule_4 功能1的规则4
+---------------------------功能3-------------------------
+feature4_AL_DESCRIPTION:获取项目名，返回该项目中所有最上级的测试项（checkbox2）
+feature4_second_name:获取该测试项下所有测试项目名称
+feature4_second_path:获取该测试项下所有测试项目路径(用户画tree)
+
+td_echo:写入tmp7表中该文件夹中所有测试用例在执行界面中的执行情况
+	输入： path 文件夹路径
+	       table 表名
+	输出： 无
+
+tablecreattmp7:创建表7 用于td_echo
+	输入： tmp7
+	输出： 无 
